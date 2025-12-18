@@ -1,6 +1,6 @@
 from schwab.auth import client_from_token_file
 from schwab.client import Client
-from schwab.orders.equities import equity_buy_market
+from schwab.orders.equities import equity_buy_market, equity_sell_market
 from schwab.orders.common import Duration, Session
 import json
 
@@ -8,6 +8,35 @@ import json
 api_key = '1PaQDwtg7K9LYDwMkUzdP66e2kjupAVjXRwGFYFkfKc9z5c4'
 app_secret = '7yjAShnMIVcS9zXCxWKe2GqU13OuR68mbLIIiAvQmvqVi1GDYtcKepixGqIo5gln'
 token_path = 'token.json'
+
+def place_market_order(side, symbol, quantity, client, account_hash):
+    if side.lower() == 'buy':
+        order_func = equity_buy_market
+        action = '买入'
+    elif side.lower() == 'sell':
+        order_func = equity_sell_market
+        action = '卖出'
+    else:
+        print(f"❌ 无效的订单类型: {side}")
+        return
+
+    # 构建订单
+    order_spec = order_func(symbol, quantity) \
+        .set_duration(Duration.GOOD_TILL_CANCEL) \
+        .set_session(Session.NORMAL) \
+        .build()
+
+    # 提交订单
+    print(f"🚀 正在尝试下单: {action} {quantity} 股 {symbol}...")
+    order_resp = client.place_order(account_hash, order_spec)
+
+    if order_resp.status_code in [200, 201, 202]:
+        print("✨ 成功！订单已提交。")
+        location = order_resp.headers.get('location', '')
+        print(f"订单查询路径: {location}")
+    else:
+        print(f"🛑 下单失败！状态码: {order_resp.status_code}")
+        print(f"错误原因: {order_resp.text}")
 
 def main():
     try:
@@ -39,28 +68,13 @@ def main():
         print("返回数据:", account_numbers)
         return
 
-    # 4. 构建订单：买入 1 股 NVDA 市价单
-    symbol = 'NVDA'
-    quantity = 1
-    
+    # 4. 调用下单方法：卖出 1 股 NVDA 市价单
+    symbol = 'AUDC'
+    quantity = 7
+
     # 再次提醒：现在是美股盘后时间，市价单可能会被拒绝
     # 如果报错 "Individual orders of this type are not allowed"，请换成限价单
-    order_spec = equity_buy_market(symbol, quantity) \
-        .set_duration(Duration.DAY) \
-        .set_session(Session.NORMAL) \
-        .build()
-
-    # 5. 提交订单
-    print(f"🚀 正在尝试下单: 买入 {quantity} 股 {symbol}...")
-    # order_resp = client.place_order(account_hash, order_spec)
-
-    # if order_resp.status_code in [200, 201, 202]:
-    #     print("✨ 成功！订单已提交。")
-    #     location = order_resp.headers.get('location', '')
-    #     print(f"订单查询路径: {location}")
-    # else:
-    #     print(f"🛑 下单失败！状态码: {order_resp.status_code}")
-    #     print(f"错误原因: {order_resp.text}")
+    place_market_order('buy', symbol, quantity, client, account_hash)
 
 if __name__ == "__main__":
     main()
