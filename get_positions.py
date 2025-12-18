@@ -2,6 +2,9 @@ from schwab.auth import client_from_token_file
 from schwab.client import Client
 import json
 
+# Import the Fields enum
+from schwab.client import Client
+
 # 1. 基础配置
 api_key = '1PaQDwtg7K9LYDwMkUzdP66e2kjupAVjXRwGFYFkfKc9z5c4'
 app_secret = '7yjAShnMIVcS9zXCxWKe2GqU13OuR68mbLIIiAvQmvqVi1GDYtcKepixGqIo5gln'
@@ -34,7 +37,7 @@ def main():
 
     # 获取账户详情，包括持仓
     print("正在获取账户详情...")
-    account_resp = client.get_account(account_hash, fields=['positions'])
+    account_resp = client.get_account(account_hash, fields=[Client.Account.Fields.POSITIONS])
 
     if account_resp.status_code != 200:
         print(f"❌ 无法获取账户详情: {account_resp.status_code} - {account_resp.text}")
