@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import time
 import os
 from selenium import webdriver
@@ -6,6 +7,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from authlib.integrations.httpx_client import OAuth2Client
 from schwab.auth import client_from_manual_flow
 from schwab.client import Client
+import urllib.parse
 
 # 1. 你的配置
 API_KEY = '1PaQDwtg7K9LYDwMkUzdP66e2kjupAVjXRwGFYFkfKc9z5c4'
